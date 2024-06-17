@@ -1,5 +1,5 @@
 {
-	"name": "{{cookiecutter.underscored}}",
+	"name": "mini_postcode_lookup",
 	"build": {
 		"dockerfile": "../Dockerfile"
 	},

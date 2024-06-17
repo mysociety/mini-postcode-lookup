@@ -1,17 +1,17 @@
 [tool.poetry]
-name = "{{cookiecutter.hyphenated}}"
+name = "mini-postcode-lookup"
 version = "0.1.0"
-description = "{{cookiecutter.description}}"
-authors = ["{{cookiecutter.author_name}} <{{cookiecutter.author_email}}>"]
+description = "Approach for small lookup files for postcode geographies."
+authors = ["mySociety <alex.parsons@mysociety.org>"]
 readme = "README.md"
 license = "MIT"
-homepage = "https://github.com/{{cookiecutter.github_id}}"
-repository = "https://github.com/{{cookiecutter.github_id}}"
+homepage = "https://github.com/mysociety/mini-postcode-lookup"
+repository = "https://github.com/mysociety/mini-postcode-lookup"
 include = [
     "LICENSE.md",
 ]
 
-[tool.poetry_bumpversion.file."src/{{cookiecutter.underscored}}/__init__.py"]
+[tool.poetry_bumpversion.file."src/mini_postcode_lookup/__init__.py"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
