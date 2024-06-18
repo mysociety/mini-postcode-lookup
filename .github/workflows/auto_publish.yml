@@ -20,8 +20,6 @@ on:
           description: Force to testpypi
           type: boolean
           default: false
-  push:
-    branches: [main]
 
 jobs:
 

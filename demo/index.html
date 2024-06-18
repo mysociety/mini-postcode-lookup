@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Postcode to Constituency Converter</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .textbox {
+            width: 45%;
+            height: 500px;
+            resize: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Postcode to Constituency Converter</h1>
+
+
+
+    <div class="container">
+
+
+
+        <textarea id="postcodes" class="textbox" placeholder="Enter postcodes"></textarea>
+        <textarea id="constituencies" class="textbox" readonly></textarea>
+    </div>
+    <br>
+
+
+    <input type="radio" id="mysoc_id" name="output_type" value="mysoc_id" checked>
+    <label for="mysoc_id">mySoc ID</label><br>
+    <input type="radio" id="parlcon_2024_name" name="output_type" value="parlcon_2024_name">
+    <label for="parlcon_2024_name">Constituency name</label><br>
+    <input type="radio" id="parlcon_2024_name_cy" name="output_type" value="parlcon_2024_name_cy">
+    <label for="parlcon_2024_name_cy">Constituency name (Welsh)</label><br>
+    <input type="radio" id="parlcon_2024_gss_code" name="output_type" value="parlcon_2024_gss_code">
+    <label for="parlcon_2024_gss_code">GSS code</label><br>
+    <input type="radio" id="parlcon_2024_three_code" name="output_type" value="parlcon_2024_three_code">
+    <label for="parlcon_2024_three_code">Three code</label><br>
+
+
+    <button id="copyButton">Copy Constituencies to clipboard</button>
+
+    <script src="mini_lookup.js" type="text/javascript"></script>
+    <script>
+        fetch("pcon_2024.json")
+            .then(response => response.json())
+            .then(data => {
+                lookup = PostcodeRangeLookup.fromDict(data);
+            })
+            .catch(error => {
+                console.error("Error loading postcode lookup data:", error);
+            });
+
+        // field_lookup is a dictionary of constitency ids to a dictionary of field names to values
+        var field_lookup = null;
+
+        fetch("pcon_2024_lookup.json")
+            .then(response => response.json())
+            .then(data => {
+                field_lookup = data
+            })
+            .catch(error => {
+                console.error("Error loading postcode lookup data:", error);
+            });
+
+        function log_count(numPostcodes) {
+            // add ga hook here
+        }
+
+        function process() {
+            var output_type = document.querySelector('input[name="output_type"]:checked').value;
+
+            var postcodes = document.getElementById("postcodes").value.split("\n");
+            var constituencies = postcodes.map(postcode => lookup.getValue(postcode));
+
+            // if output_type is not mySoc ID, convert the constituency ids to the desired output
+            if (output_type !== "mysoc_id") {
+                constituencies = constituencies.map(constituency => {
+                    if (constituency === null) {
+                        return null;
+                    }
+                    return field_lookup[constituency][output_type];
+                });
+            }
+
+            // if the top row of constituencies is blank
+            // there is more than one row (suggesting the original top row was a header)
+            // make the top row a pcon_2024 header
+            if (constituencies[0] === null && constituencies.length > 1) {
+                constituencies[0] = "pcon_2024";
+            }
+
+            document.getElementById("constituencies").value = constituencies.join("\n");
+
+            log_count(postcodes.length);
+        }
+
+
+        document.getElementById("postcodes").addEventListener("input", process);
+        document.getElementsByName("output_type").forEach(function (element) {
+            element.addEventListener("input", process);
+        });
+
+        document.getElementById("copyButton").addEventListener("click", function () {
+            var constituenciesText = document.getElementById("constituencies").value;
+            navigator.clipboard.writeText(constituenciesText)
+                .then(() => {
+                    console.log("Constituencies copied to clipboard");
+                })
+                .catch(error => {
+                    console.error("Error copying constituencies to clipboard:", error);
+                });
+        });
+    </script>
+</body>
+
+</html>
