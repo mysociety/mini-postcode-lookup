@@ -140,17 +140,22 @@ class BaseLookupCreator:
     df_source: Union[Path, str] = ""
     test_df_source: Union[Path, str] = ""
 
-    def get_df(self, test: bool = False):
+    def get_df(self, test: bool = False) -> pd.DataFrame:
         str_path = str(self.test_df_source) if test else str(self.df_source)
         if str_path.lower().endswith(".parquet"):
             df = pd.read_parquet(str_path, columns=[self.postcode_col, self.value_col])
         else:
             df = pd.read_csv(  # type: ignore
-                str_path, usecols=[self.postcode_col, self.value_col]
+                str_path,
+                usecols=[self.postcode_col, self.value_col],  # type: ignore
             )
 
         if LIMIT_NI:
             df = df[~df[self.postcode_col].str.startswith("BT")]  # type: ignore
+
+        if not isinstance(df, pd.DataFrame):  # type: ignore
+            raise ValueError(f"Expected a DataFrame, got {type(df)}")
+
         return df
 
     def create(self, *, force: bool = False):
