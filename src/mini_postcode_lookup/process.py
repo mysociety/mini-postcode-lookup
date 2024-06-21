@@ -118,10 +118,9 @@ class PostcodeRangeLookup:
 
         # use binary search to find the index of the first postcode_key that is greater than int_postcode
         left = bisect.bisect_left(self.postcode_keys, int_postcode)
-
         # if left is 0, then the postcode is less than the first postcode_key
-        if left == 0:
-            return None
+        if left == 0 and int_postcode != self.postcode_keys[0]:
+                return None
 
         if left < len(self.postcode_keys) and self.postcode_keys[left] != int_postcode:
             left -= 1

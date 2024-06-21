@@ -68,8 +68,7 @@ class PostcodeRangeLookup {
 
         const intPostcode = postcodeToInt(postcode);
         let left = bisectLeft(this.postcodeKeys, intPostcode);
-
-        if (left === 0) {
+        if (left === 0 && (intPostcode !== this.postcodeKeys[0])) {
             return null;
         }
 
