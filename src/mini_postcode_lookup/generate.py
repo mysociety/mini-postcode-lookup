@@ -14,7 +14,7 @@ from tqdm import tqdm
 dest_folder = Path(__file__).parent / "data"
 
 # Remove NI data
-LIMIT_NI = True
+LIMIT_NI = False
 
 
 def difference_compression(input_list: list[int]) -> list[int]:

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import TypedDict
 
 import pandas as pd
+import requests
 
 from .util import StrEnum
 
@@ -120,7 +121,7 @@ class PostcodeRangeLookup:
         left = bisect.bisect_left(self.postcode_keys, int_postcode)
         # if left is 0, then the postcode is less than the first postcode_key
         if left == 0 and int_postcode != self.postcode_keys[0]:
-                return None
+            return None
 
         if left < len(self.postcode_keys) and self.postcode_keys[left] != int_postcode:
             left -= 1
@@ -148,6 +149,13 @@ class PostcodeRangeLookup:
     def from_json(cls, path: Path):
         with path.open("r") as f:
             data = json.load(f)
+        return cls.from_dict(data)
+
+    @classmethod
+    def from_json_url(cls, url: str):
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
         return cls.from_dict(data)
 
     @classmethod
@@ -193,6 +201,14 @@ class MiniPostcodeLookup:
             include_extra_cols=include_extra_cols,
         )
         df.to_csv(dest_path, index=False)
+
+    def get_series(
+        self, series: pd.Series, *, area_type: AllowedAreaTypes
+    ) -> pd.Series:
+        self.check_and_load_area(area_type)
+        return series.apply(  # type: ignore
+            lambda x: self.get_value(x, area_type=area_type)  # type: ignore
+        )
 
     def add_to_df(
         self,
