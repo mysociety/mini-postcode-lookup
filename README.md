@@ -6,9 +6,17 @@ Don't use NI postcodes except for statistical/internal business uses. See [ONSPD
 
 
 ## Install tool
-```
+```bash
 pip install git+https://github.com/mysociety/mini-postcode-lookup
 ```
+
+## Quick command line lsoa lookup
+
+```bash
+ python -m mini_postcode_lookup get-postcode "SW1A 0AA " --area-type lsoa
+```
+
+Use `python -m mini_postcode_lookup --help` for more.
 
 ## Example of adding deprivation data to a dataset
 
