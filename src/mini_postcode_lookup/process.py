@@ -139,9 +139,9 @@ class PostcodeRangeLookup:
     def from_dict(cls, data: StoredData):
         return cls(
             postcode_keys=array(
-                "L", reverse_difference_compression(data["postcode_keys"])
+                "Q", reverse_difference_compression(data["postcode_keys"])
             ),
-            value_key=array("L", reverse_drop_minus_one(data["value_key"])),
+            value_key=array("Q", reverse_drop_minus_one(data["value_key"])),
             value_values=data["value_values"],
         )
 
