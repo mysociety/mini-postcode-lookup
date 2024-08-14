@@ -23,7 +23,7 @@ Use `python -m mini_postcode_lookup --help` for more.
 ```python
 
 import pandas as pd
-from mini_postcode_lookup import AllowedAreaTypes, MiniPostcodeLookup
+from mini_postcode_lookup import AllowedAreaTypes, MiniPostcodeLookup, IMDInclude
 
 df = pd.read_csv(...) # source here with a postcode column
 
@@ -32,6 +32,7 @@ deprivation_df = pd.read_csv("https://pages.mysociety.org/composite_uk_imd/data/
 lookup = MiniPostcodeLookup()
 
 df["lsoa"] = lookup.get_series(df["postcode"], area_type=AllowedAreaTypes.LSOA)
-df = df.merge(deprivation_df)
 
+#doesn't need the lsoa already present - but same approach for both.
+df["imd_decile"] = lookup.get_series(df["postcode"], area_type=IMDInclude.DECILE)
 ```

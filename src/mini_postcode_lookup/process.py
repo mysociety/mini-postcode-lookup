@@ -5,12 +5,29 @@ import json
 import re
 from array import array
 from pathlib import Path
-from typing import TypedDict, Union
+from typing import TYPE_CHECKING, Any, TypedDict, Union
 
 import pandas as pd
 import requests
 
 from .util import StrEnum
+
+if TYPE_CHECKING:
+    Series = pd.Series[Any]
+else:
+    Series = pd.Series
+
+IMD_URL = (
+    "https://pages.mysociety.org/composite_uk_imd/data/uk_index/latest/UK_IMD_E.csv"
+)
+
+
+class IMDInclude(StrEnum):
+    NONE = "none"
+    DECILE = "decile"
+    QUINTILE = "quintile"
+    RANK = "rank"
+    ALL = "all"
 
 
 class AllowedAreaTypes(StrEnum):
@@ -188,6 +205,7 @@ class MiniPostcodeLookup:
         area_type: AllowedAreaTypes = AllowedAreaTypes.PCON_2024,
         postcode_col: str = "postcode",
         include_extra_cols: bool = False,
+        include_imd: IMDInclude = IMDInclude.NONE,
     ):
         """
         Add a column to a csv with the area type
@@ -201,16 +219,42 @@ class MiniPostcodeLookup:
             area_type=area_type,
             postcode_col=postcode_col,
             include_extra_cols=include_extra_cols,
+            include_imd=include_imd,
         )
+
         df.to_csv(dest_path, index=False)
 
     def get_series(
-        self, series: pd.Series, *, area_type: AllowedAreaTypes
-    ) -> pd.Series:
-        self.check_and_load_area(area_type)
-        return series.apply(  # type: ignore
-            lambda x: self.get_value(x, area_type=area_type)  # type: ignore
+        self, series: Series, *, area_type: Union[AllowedAreaTypes, IMDInclude]
+    ) -> Series:
+        if isinstance(area_type, IMDInclude):
+            imd_include = area_type
+            area_type = AllowedAreaTypes.LSOA
+            if imd_include == IMDInclude.ALL:
+                raise ValueError("IMDInclude.ALL is not valid for get_series")
+        else:
+            imd_include = IMDInclude.NONE
+
+        area_df = pd.DataFrame(series, columns=["postcode"])  # type: ignore
+
+        area_df = self.add_to_df(
+            area_df,
+            area_type=area_type,
+            postcode_col="postcode",
+            include_extra_cols=False,
+            include_imd=imd_include,
         )
+
+        if imd_include == IMDInclude.NONE:
+            return area_df[area_type]  # type: ignore
+        elif imd_include == IMDInclude.DECILE:
+            return area_df["UK_IMD_E_pop_decile"]  # type: ignore
+        elif imd_include == IMDInclude.QUINTILE:
+            return area_df["UK_IMD_E_pop_quintile"]  # type: ignore
+        elif imd_include == IMDInclude.RANK:
+            return area_df["UK_IMD_E_rank"]  # type: ignore
+        else:
+            raise ValueError(f"Unknown IMDInclude: {imd_include}")
 
     def add_to_df(
         self,
@@ -219,6 +263,7 @@ class MiniPostcodeLookup:
         area_type: AllowedAreaTypes = AllowedAreaTypes.PCON_2024,
         postcode_col: str = "postcode",
         include_extra_cols: bool = False,
+        include_imd: IMDInclude = IMDInclude.NONE,
     ):
         """
         Add a column to a dataframe with the area type
@@ -230,6 +275,18 @@ class MiniPostcodeLookup:
         if area_type in areas_with_lookups and include_extra_cols:
             lookup_df = load_lookup(area_type)
             df = df.merge(lookup_df, on=area_type, how="left")  # type: ignore
+
+        if include_imd != IMDInclude.NONE:
+            deprivation_df: pd.DataFrame = pd.read_csv(IMD_URL)  # type: ignore
+            keep_columns = ["lsoa"]
+            if include_imd == IMDInclude.ALL or include_imd == IMDInclude.RANK:
+                keep_columns.append("UK_IMD_E_rank")
+            if include_imd == IMDInclude.ALL or include_imd == IMDInclude.QUINTILE:
+                keep_columns.append("UK_IMD_E_pop_quintile")
+            if include_imd == IMDInclude.ALL or include_imd == IMDInclude.DECILE:
+                keep_columns.append("UK_IMD_E_pop_decile")
+            deprivation_df = deprivation_df[keep_columns]
+            df = df.merge(deprivation_df, left_on="lsoa", right_on="lsoa", how="left")
 
         return df
 
