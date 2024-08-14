@@ -5,7 +5,7 @@ import json
 import re
 from array import array
 from pathlib import Path
-from typing import TypedDict
+from typing import TypedDict, Union
 
 import pandas as pd
 import requests
@@ -46,10 +46,12 @@ def load_lookup(area_type: AllowedAreaTypes) -> pd.DataFrame:
     return df
 
 
-def check_real_postcode(postcode: str) -> bool:
+def check_real_postcode(postcode: Union[str, float]) -> bool:
     """
     Check if a postcode is a valid UK postcode
     """
+    if not isinstance(postcode, str):
+        return False
     return bool(postcode_regex.match(postcode.replace(" ", "").upper()))
 
 
