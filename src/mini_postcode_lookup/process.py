@@ -206,6 +206,7 @@ class MiniPostcodeLookup:
         postcode_col: str = "postcode",
         include_extra_cols: bool = False,
         include_imd: IMDInclude = IMDInclude.NONE,
+        remove_postcode: bool = False,
     ):
         """
         Add a column to a csv with the area type
@@ -221,6 +222,9 @@ class MiniPostcodeLookup:
             include_extra_cols=include_extra_cols,
             include_imd=include_imd,
         )
+
+        if remove_postcode:
+            df = df.drop(columns=[postcode_col])
 
         df.to_csv(dest_path, index=False)
 

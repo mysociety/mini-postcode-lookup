@@ -35,6 +35,7 @@ def add_to_csv(
     postcode_col: str = "postcode",
     include_extra_cols: bool = False,
     include_imd: IMDInclude = IMDInclude.NONE,
+    remove_postcode: bool = False,
 ):
     """
     Add a column to a csv with the area type
@@ -50,6 +51,7 @@ def add_to_csv(
         postcode_col=postcode_col,
         include_extra_cols=include_extra_cols,
         include_imd=include_imd,
+        remove_postcode=remove_postcode,
     )
 
 
