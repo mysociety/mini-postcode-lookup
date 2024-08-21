@@ -11,6 +11,9 @@ include = [
     "LICENSE.md",
 ]
 
+[tool.poetry.scripts]
+mini-postcode-lookup = "mini_postcode_lookup.__main__:app"
+
 [tool.poetry_bumpversion.file."src/mini_postcode_lookup/__init__.py"]
 
 [tool.poetry.dependencies]
