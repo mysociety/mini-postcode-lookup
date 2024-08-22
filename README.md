@@ -10,6 +10,13 @@ Don't use NI postcodes except for statistical/internal business uses. See [ONSPD
 pip install git+https://github.com/mysociety/mini-postcode-lookup
 ```
 
+## Use uvx
+
+```bash
+uvx --from git+https://github.com/mysociety/mini-postcode-lookup mini-postcode-lookup ui
+```
+
+
 ## Quick command line lsoa lookup
 
 ```bash
