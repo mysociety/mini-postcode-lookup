@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, TypedDict, Union
 
 import pandas as pd
 import requests
+import rich
 
 from .util import StrEnum
 
@@ -227,6 +228,7 @@ class MiniPostcodeLookup:
             df = df.drop(columns=[postcode_col])
 
         df.to_csv(dest_path, index=False)
+        rich.print(f"[green]File created at {dest_path}[/green]")
 
     def get_series(
         self, series: Series, *, area_type: Union[AllowedAreaTypes, IMDInclude]
