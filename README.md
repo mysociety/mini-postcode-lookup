@@ -13,7 +13,7 @@ pip install git+https://github.com/mysociety/mini-postcode-lookup
 ## Use uvx
 
 ```bash
-uvx --from git+https://github.com/mysociety/mini-postcode-lookup mini-postcode-lookup ui
+uvx --from git+https://github.com/mysociety/mini-postcode-lookup mini-postcode-lookup tui
 ```
 
 

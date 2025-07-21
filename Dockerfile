@@ -7,5 +7,5 @@ RUN curl -sSL https://install.python-poetry.org | python - && \
     export PATH="/root/.local/bin:$PATH"  && \
     poetry config virtualenvs.create false && \
     poetry self add poetry-bumpversion && \
-    poetry install && \
+    poetry install --no-root && \
     echo "/workspaces/mini-postcode-lookup/src/" > /usr/local/lib/python3.10/site-packages/mini_postcode_lookup.pth

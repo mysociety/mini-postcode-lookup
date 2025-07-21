@@ -1,20 +1,13 @@
 from pathlib import Path
 
 import typer
-from trogon import Trogon  # type: ignore
-from typer.main import get_group
+from trogon.typer import init_tui  # type: ignore
 
 from .process import AllowedAreaTypes, IMDInclude, MiniPostcodeLookup
 
 app = typer.Typer(help="")
 
-
-@app.command()
-def ui(ctx: typer.Context):
-    """
-    Open terminal UI
-    """
-    Trogon(get_group(app), click_context=ctx).run()
+init_tui(app)
 
 
 @app.command()
