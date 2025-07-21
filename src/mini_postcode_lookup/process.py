@@ -18,9 +18,11 @@ if TYPE_CHECKING:
 else:
     Series = pd.Series
 
-IMD_URL = (
-    "https://pages.mysociety.org/composite_uk_imd/data/uk_index/latest/UK_IMD_E.csv"
-)
+IMD_URL = "https://pages.mysociety.org/composite_uk_imd/data/uk_index/latest/UK_IMD_{nation}.csv"
+
+
+def get_imd_url(nation: IMDNation):
+    return IMD_URL.format(nation=nation.name)
 
 
 class IMDInclude(StrEnum):
@@ -29,6 +31,13 @@ class IMDInclude(StrEnum):
     QUINTILE = "quintile"
     RANK = "rank"
     ALL = "all"
+
+
+class IMDNation(StrEnum):
+    E = "England"
+    S = "Scotland"
+    W = "Wales"
+    N = "Northern Ireland"
 
 
 class AllowedAreaTypes(StrEnum):
@@ -207,6 +216,7 @@ class MiniPostcodeLookup:
         postcode_col: str = "postcode",
         include_extra_cols: bool = False,
         include_imd: IMDInclude = IMDInclude.NONE,
+        imd_nation: IMDNation = IMDNation.E,
         remove_postcode: bool = False,
     ):
         """
@@ -222,6 +232,7 @@ class MiniPostcodeLookup:
             postcode_col=postcode_col,
             include_extra_cols=include_extra_cols,
             include_imd=include_imd,
+            imd_nation=imd_nation,
         )
 
         if remove_postcode:
@@ -231,7 +242,11 @@ class MiniPostcodeLookup:
         rich.print(f"[green]File created at {dest_path}[/green]")
 
     def get_series(
-        self, series: Series, *, area_type: Union[AllowedAreaTypes, IMDInclude]
+        self,
+        series: Series,
+        *,
+        area_type: Union[AllowedAreaTypes, IMDInclude],
+        imd_nation: IMDNation = IMDNation.E,
     ) -> Series:
         if isinstance(area_type, IMDInclude):
             imd_include = area_type
@@ -254,11 +269,11 @@ class MiniPostcodeLookup:
         if imd_include == IMDInclude.NONE:
             return area_df[area_type]  # type: ignore
         elif imd_include == IMDInclude.DECILE:
-            return area_df["UK_IMD_E_pop_decile"]  # type: ignore
+            return area_df[f"UK_IMD_{imd_nation.name}_pop_decile"]  # type: ignore
         elif imd_include == IMDInclude.QUINTILE:
-            return area_df["UK_IMD_E_pop_quintile"]  # type: ignore
+            return area_df[f"UK_IMD_{imd_nation.name}_pop_quintile"]  # type: ignore
         elif imd_include == IMDInclude.RANK:
-            return area_df["UK_IMD_E_rank"]  # type: ignore
+            return area_df[f"UK_IMD_{imd_nation.name}_rank"]  # type: ignore
         else:
             raise ValueError(f"Unknown IMDInclude: {imd_include}")
 
@@ -270,6 +285,7 @@ class MiniPostcodeLookup:
         postcode_col: str = "postcode",
         include_extra_cols: bool = False,
         include_imd: IMDInclude = IMDInclude.NONE,
+        imd_nation: IMDNation = IMDNation.E,
     ):
         """
         Add a column to a dataframe with the area type
@@ -283,16 +299,18 @@ class MiniPostcodeLookup:
             df = df.merge(lookup_df, on=area_type, how="left")  # type: ignore
 
         if include_imd != IMDInclude.NONE:
-            deprivation_df: pd.DataFrame = pd.read_csv(IMD_URL)  # type: ignore
+            deprivation_df: pd.DataFrame = pd.read_csv(  # type: ignore
+                get_imd_url(imd_nation)
+            )
             keep_columns = ["lsoa"]
             if include_imd == IMDInclude.ALL or include_imd == IMDInclude.RANK:
-                keep_columns.append("UK_IMD_E_rank")
+                keep_columns.append(f"UK_IMD_{imd_nation.name}_rank")
             if include_imd == IMDInclude.ALL or include_imd == IMDInclude.QUINTILE:
-                keep_columns.append("UK_IMD_E_pop_quintile")
+                keep_columns.append(f"UK_IMD_{imd_nation.name}_pop_quintile")
             if include_imd == IMDInclude.ALL or include_imd == IMDInclude.DECILE:
-                keep_columns.append("UK_IMD_E_pop_decile")
+                keep_columns.append(f"UK_IMD_{imd_nation.name}_pop_decile")
             deprivation_df = deprivation_df[keep_columns]
-            df = df.merge(deprivation_df, left_on="lsoa", right_on="lsoa", how="left")
+            df = df.merge(deprivation_df, left_on="lsoa", right_on="lsoa", how="left")  # type: ignore
 
         return df
 

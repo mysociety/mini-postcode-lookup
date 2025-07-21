@@ -3,7 +3,7 @@ from pathlib import Path
 import typer
 from trogon.typer import init_tui  # type: ignore
 
-from .process import AllowedAreaTypes, IMDInclude, MiniPostcodeLookup
+from .process import AllowedAreaTypes, IMDInclude, MiniPostcodeLookup, IMDNation
 
 app = typer.Typer(help="")
 
@@ -28,6 +28,7 @@ def add_to_csv(
     postcode_col: str = "postcode",
     include_extra_cols: bool = False,
     include_imd: IMDInclude = IMDInclude.NONE,
+    imd_nation: IMDNation = IMDNation.E,
     remove_postcode: bool = False,
 ):
     """
@@ -44,6 +45,7 @@ def add_to_csv(
         postcode_col=postcode_col,
         include_extra_cols=include_extra_cols,
         include_imd=include_imd,
+        imd_nation = imd_nation,
         remove_postcode=remove_postcode,
     )
 
